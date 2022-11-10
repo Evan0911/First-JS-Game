@@ -1,15 +1,4 @@
 //Classes
-class Monster{
-    constructor(id, name, maxHp, atk, def, actions) {
-        this.id = id
-        this.name = name
-        this.maxHp = maxHp
-        this.currentHp = maxHp
-        this.atk = atk
-        this.def = def
-        this.actions = actions
-    }
-}
 
 //Etat
 const states = {
@@ -24,12 +13,6 @@ const states = {
 let state = states.START
 let actionQueue = []
 
-const targetTypes = {
-    OneEnemy: "OneEnemy",
-    AllEnemies: "AllEnemies",
-    Itself: "Itself"
-}
-
 //DOM
 const playerDiv = document.querySelector('#playerDiv')
 const enemyDiv = document.querySelector('#enemyDiv')
@@ -39,87 +22,23 @@ const actionsDiv = document.querySelector('#actionsDiv')
 //Stats/Inventaires
 const allyMonsters = [
     new Monster(1, "aled", 20, 10, 5, [
-        {
-            name: "Attaque simple",
-            targetType: targetTypes.OneEnemy,
-            effect: (enemy, monster) => {
-                enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-            }
-        },
-        {
-            name: "Attaque de zone",
-            targetType: targetTypes.AllEnemies,
-            effect:
-                (enemies, monster) => {
-                    enemies.forEach(enemy => {
-                        monster.atk = Math.floor(monster.atk / 2)
-                        enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-                    })
-                }
-        }
+        new Action("Attaque simple", targetTypes.OneEnemy, actionTypes.SimpleAttack),
+        new Action("Attaque de zone", targetTypes.AllEnemies, actionTypes.AreaAttack),
 ]),
     new Monster(2, "vincent", 20, 10, 5, [
-        {
-            name: "Attaque simple",
-            targetType: targetTypes.OneEnemy,
-            effect: (enemy, monster) => {
-                enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-            }
-        },
-        {
-            name: "Attaque de zone",
-            targetType: targetTypes.AllEnemies,
-            effect:
-                (enemies, monster) => {
-                    enemies.forEach(enemy => {
-                        monster.atk = Math.floor(monster.atk / 2)
-                        enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-                    })
-                }
-        }
+        new Action("Attaque simple", targetTypes.OneEnemy, actionTypes.SimpleAttack),
+        new Action("Soin", targetTypes.Itself, actionTypes.Heal),
     ]),
 ]
 
 const enemyMonsters = [
-    new Monster(3, "aled", 20, 10, 5, [
-        {
-            name: "Attaque simple",
-            targetType: targetTypes.OneEnemy,
-            effect: (enemy, monster) => {
-                enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-            }
-        },
-        {
-            name: "Attaque de zone",
-            targetType: targetTypes.AllEnemies,
-            effect:
-                (enemies, monster) => {
-                    enemies.forEach(enemy => {
-                        monster.atk = Math.floor(monster.atk / 2)
-                        enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-                    })
-                }
-        }
+    new Monster(3, "Gerard", 20, 10, 5, [
+        new Action("Attaque simple", targetTypes.OneEnemy, actionTypes.SimpleAttack),
+        new Action("Attaque de zone", targetTypes.AllEnemies, actionTypes.AreaAttack),
     ]),
-    new Monster(4, "vincent", 20, 10, 5, [
-        {
-            name: "Attaque simple",
-            targetType: targetTypes.OneEnemy,
-            effect: (enemy, monster) => {
-                enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-            }
-        },
-        {
-            name: "Attaque de zone",
-            targetType: targetTypes.AllEnemies,
-            effect:
-                (enemies, monster) => {
-                    enemies.forEach(enemy => {
-                        monster.atk = Math.floor(monster.atk / 2)
-                        enemy.currentHp -= (monster.atk - enemy.def < 1 ? 1 : monster.atk - enemy.def)
-                    })
-                }
-        }
+    new Monster(4, "LixLeVrai", 20, 10, 5, [
+        new Action("Attaque simple", targetTypes.OneEnemy, actionTypes.SimpleAttack),
+        new Action("Soin", targetTypes.Itself, actionTypes.Heal),
     ]),
 ]
 
@@ -149,7 +68,7 @@ function StartOfTurn() {
 
         case states.ATTACKS:
             actionQueue.forEach(action => {
-                action.action.effect(action.target, action.performer)
+                action.action.actionType(action.user, action.target)
             })
             RefreshUI()
             break
@@ -212,10 +131,10 @@ function ChooseAction(id){
         buttonAction.innerText = action.name
         buttonAction.addEventListener('click', ()=>{
             actionQueue.push({
-                performer: allyMonsters[id],
+                user: allyMonsters[id],
                 action: action
             })
-            switch(action.targetType){
+            switch(action.target){
                 case targetTypes.OneEnemy:
                     ChooseTarget()
                     break
@@ -258,7 +177,5 @@ function ChooseTarget(){
         actionsDiv.appendChild(button)
     })
 }
-
-
 
 StartOfTurn()
