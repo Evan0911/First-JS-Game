@@ -1,12 +1,28 @@
+const statusType = {
+    Alive: "Alive",
+    Dead: "Dead",
+    //autre status (ex : paralisie, etc)
+}
+
 class Monster{
-    constructor(id, name, maxHp, atk, def, actions) {
+    constructor(id, name, maxHp, atk, def, status, actions) {
         this.id = id
         this.name = name
         this.maxHp = maxHp
-        this.currentHp = 10
+        this.currentHp = maxHp
         this.atk = atk
         this.def = def
         this.actions = actions
+        this.status = status
+    }
+
+    LoseHp(damage) {
+        if (this.currentHp - damage <= 0) {
+            this.currentHp = 0
+            this.status = statusType.Dead
+        } else {
+            this.currentHp -= damage
+        }
     }
 }
 
@@ -38,18 +54,27 @@ class Action{
         }
     }
 
+
+
     SimpleAttack(userMonster, targetMonster) {
-        targetMonster.currentHp -= (userMonster.atk - targetMonster.def < 1 ? 1 : userMonster.atk - targetMonster.def)
+        let damage
+        if (userMonster.atk <= targetMonster.def)
+            damage = 1
+        else
+            damage = userMonster.atk - targetMonster.def
+        targetMonster.LoseHp(damage)
     }
 
     AreaAttack(userMonster, targetMonsters) {
         targetMonsters.forEach(monster => {
-            let damage
-            if ((userMonster.atk - monster.def) / 2 < 1)
-                damage = 1
-            else
-                damage = Math.floor((userMonster.atk - monster.def) / 2)
-            monster.currentHp -= damage
+            if (monster.status != statusType.Dead) {
+                let damage
+                if ((userMonster.atk - monster.def) / 2 < 1)
+                    damage = 1
+                else
+                    damage = Math.floor((userMonster.atk - monster.def) / 2)
+                monster.LoseHp(damage)
+            }
         })
     }
 
